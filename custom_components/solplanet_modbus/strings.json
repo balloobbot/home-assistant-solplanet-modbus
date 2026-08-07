@@ -1,0 +1,277 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Solplanet",
+        "menu_options": {
+          "ailogger": "Ai-Logger (Modbus TCP)",
+          "inverter_serial": "Single inverter — serial / USB (RS-485)",
+          "inverter_network": "Single inverter — network gateway (RTU over TCP)"
+        }
+      },
+      "ailogger": {
+        "title": "Ai-Logger",
+        "description": "The Ai-Logger is a Modbus TCP slave serving every inverter it polls. It accepts one client at a time, so stop anything else polling it first. Scanning a port reads all 30 of its reserved windows, so pick only the ports that have inverters wired to them.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Modbus unit address",
+          "scan_ports": "RS-485 ports to scan",
+          "weather": "Read the weather station",
+          "meter": "Read the SDM630 meter"
+        }
+      },
+      "inverter_network": {
+        "title": "Inverter via network gateway",
+        "description": "One inverter reached through an RS-485 to network gateway. Use the inverter's own Modbus address; Solplanet ships them as 3.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "framer": "Wire framing",
+          "unit_id": "Inverter Modbus address"
+        }
+      },
+      "inverter_serial": {
+        "title": "Inverter via serial",
+        "description": "One inverter on an RS-485 adapter attached to this machine. Solplanet inverters default to 9600 baud, 8N1, Modbus address 3. Do not wire this to a bus an Ai-Logger is already polling — two masters on one RS-485 line collide.",
+        "data": {
+          "serial_device": "Serial device",
+          "baudrate": "Baud rate",
+          "parity": "Parity",
+          "unit_id": "Inverter Modbus address"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "no_inverters": "No inverters answered on the selected ports"
+    },
+    "abort": {
+      "already_configured": "Device is already configured"
+    }
+  },
+  "selector": {
+    "framer": {
+      "options": {
+        "rtu": "RTU over TCP (transparent serial gateway)",
+        "socket": "Native Modbus TCP"
+      }
+    },
+    "parity": {
+      "options": {
+        "e": "Even",
+        "n": "None",
+        "o": "Odd"
+      }
+    },
+    "scan_ports": {
+      "options": {
+        "1": "COM1 (addresses 3-32)",
+        "2": "COM2 (addresses 51-80)",
+        "3": "COM3 (addresses 102-131)"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "state": {
+        "name": "Status",
+        "state": {
+          "wait": "Waiting",
+          "normal": "Normal",
+          "fault": "Fault",
+          "checking": "Self-checking"
+        }
+      },
+      "active_power": {
+        "name": "Active power"
+      },
+      "apparent_power": {
+        "name": "Apparent power"
+      },
+      "reactive_power": {
+        "name": "Reactive power"
+      },
+      "power_factor": {
+        "name": "Power factor"
+      },
+      "energy_today": {
+        "name": "Energy today"
+      },
+      "energy_total": {
+        "name": "Energy total"
+      },
+      "hours_total": {
+        "name": "Operating time"
+      },
+      "connect_time": {
+        "name": "Grid connect time"
+      },
+      "grid_frequency": {
+        "name": "Grid frequency"
+      },
+      "error_code": {
+        "name": "Error code"
+      },
+      "error_description": {
+        "name": "Error"
+      },
+      "warning_code": {
+        "name": "Warning code"
+      },
+      "internal_temperature": {
+        "name": "Internal temperature"
+      },
+      "boost_temperature": {
+        "name": "Boost temperature"
+      },
+      "phase_u_temperature": {
+        "name": "Phase U temperature"
+      },
+      "phase_v_temperature": {
+        "name": "Phase V temperature"
+      },
+      "phase_w_temperature": {
+        "name": "Phase W temperature"
+      },
+      "dc_converter_temperature": {
+        "name": "DC/DC converter temperature"
+      },
+      "bus_voltage": {
+        "name": "Bus voltage"
+      },
+      "l1_voltage": {
+        "name": "L1 voltage"
+      },
+      "l1_current": {
+        "name": "L1 current"
+      },
+      "l2_voltage": {
+        "name": "L2 voltage"
+      },
+      "l2_current": {
+        "name": "L2 current"
+      },
+      "l3_voltage": {
+        "name": "L3 voltage"
+      },
+      "l3_current": {
+        "name": "L3 current"
+      },
+      "rs_line_voltage": {
+        "name": "RS line voltage"
+      },
+      "rt_line_voltage": {
+        "name": "RT line voltage"
+      },
+      "st_line_voltage": {
+        "name": "ST line voltage"
+      },
+      "pv_voltage": {
+        "name": "PV {number} voltage"
+      },
+      "pv_current": {
+        "name": "PV {number} current"
+      },
+      "string_current": {
+        "name": "String {number} current"
+      },
+      "site_active_power": {
+        "name": "Site active power"
+      },
+      "site_reactive_power": {
+        "name": "Site reactive power"
+      },
+      "irradiance": {
+        "name": "Weather {number} irradiance"
+      },
+      "cell_temperature": {
+        "name": "Weather {number} cell temperature"
+      },
+      "external_temperature_1": {
+        "name": "Weather {number} external temperature 1"
+      },
+      "external_temperature_2": {
+        "name": "Weather {number} external temperature 2"
+      },
+      "humidity": {
+        "name": "Weather {number} humidity"
+      },
+      "wind_direction": {
+        "name": "Weather {number} wind direction"
+      },
+      "wind_speed_raw": {
+        "name": "Weather {number} wind speed (raw)"
+      },
+      "meter_total_power": {
+        "name": "Meter power"
+      },
+      "meter_import_energy": {
+        "name": "Meter imported energy"
+      },
+      "meter_export_energy": {
+        "name": "Meter exported energy"
+      },
+      "meter_frequency": {
+        "name": "Meter frequency"
+      },
+      "meter_total_power_factor": {
+        "name": "Meter power factor"
+      },
+      "meter_total_apparent_power": {
+        "name": "Meter apparent power"
+      },
+      "meter_total_reactive_power": {
+        "name": "Meter reactive power"
+      },
+      "meter_l1_power": {
+        "name": "Meter L1 power"
+      },
+      "meter_l2_power": {
+        "name": "Meter L2 power"
+      },
+      "meter_l3_power": {
+        "name": "Meter L3 power"
+      },
+      "meter_l1_voltage": {
+        "name": "Meter L1 voltage"
+      },
+      "meter_l2_voltage": {
+        "name": "Meter L2 voltage"
+      },
+      "meter_l3_voltage": {
+        "name": "Meter L3 voltage"
+      },
+      "meter_l1_current": {
+        "name": "Meter L1 current"
+      },
+      "meter_l2_current": {
+        "name": "Meter L2 current"
+      },
+      "meter_l3_current": {
+        "name": "Meter L3 current"
+      }
+    },
+    "binary_sensor": {
+      "fault": {
+        "name": "Fault"
+      }
+    },
+    "number": {
+      "active_power_limit": {
+        "name": "Active power limit"
+      },
+      "reactive_power_command": {
+        "name": "Reactive power command"
+      },
+      "power_factor_command": {
+        "name": "Power factor command"
+      }
+    },
+    "switch": {
+      "inverter_power": {
+        "name": "Inverters"
+      }
+    }
+  }
+}
