@@ -47,7 +47,7 @@ An inverter's own Modbus map is the *same* 1000–1389 block the logger republis
 
 The same thing through an RS-485-to-network gateway, which is a transparent serial bridge — hence RTU framing by default. Pick *native Modbus TCP* only if your gateway re-frames.
 
-The connection is managed for you in all three cases: it opens on the first poll and re-establishes itself after a drop. A device that goes offline comes back on its own — no reload needed.
+The connection is managed for you in all three cases: it opens on the first poll and re-establishes itself after a drop. A device that goes offline comes back on its own — no reload needed. If three polls in a row fail, the link is torn down and rebuilt as well, which covers the case a drop does not: the Ai-Logger accepts one client at a time, so another one taking it over can leave this socket open but unanswered.
 
 ## Installation
 

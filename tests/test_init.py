@@ -7,7 +7,7 @@ from unittest.mock import patch
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
-from modbus_connection import ModbusExceptionError
+from modbus_connection import ModbusConnectionError
 from modbus_connection.mock import MockModbusConnection
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -17,6 +17,7 @@ from custom_components.solplanet_modbus.const import (
     CONF_UNIT_ID,
     CONNECTION_TYPE_SERIAL,
     DOMAIN,
+    FAILURES_BEFORE_RECONNECT,
     MODE_INVERTER,
 )
 from custom_components.solplanet_modbus.diagnostics import (
@@ -42,10 +43,8 @@ async def test_setup_retries_when_the_logger_is_unreachable(
 
     def failing(data: object) -> MockModbusConnection:
         connection = MockModbusConnection()
-        connection.for_unit(ENTRY_DATA[CONF_UNIT_ID]).fail_read(
-            1000,
-            ModbusExceptionError(4, "slave device failure"),
-            register_type="input",
+        connection.for_unit(ENTRY_DATA[CONF_UNIT_ID]).fail_requests(
+            ModbusConnectionError("device is offline")
         )
         return connection
 
@@ -88,9 +87,7 @@ async def test_a_failed_poll_makes_entities_unavailable(
     mock_connection: ConnectionFactory,
 ) -> None:
     """The link dropping is not a reload — the entry stays loaded."""
-    mock_connection.unit.fail_read(
-        1300, ModbusExceptionError(4, "gateway failed"), register_type="input"
-    )
+    mock_connection.unit.fail_requests(ModbusConnectionError("device is offline"))
     coordinator = config_entry.runtime_data
     await coordinator.async_refresh()
     await hass.async_block_till_done()
@@ -145,3 +142,45 @@ async def test_the_diagnostics_dump_replays_into_the_mock(
     replayed = MockModbusConnection()
     replayed.for_unit(1).load_raw(diagnostics["registers"])
     assert replayed.for_unit(1).input[36101] == INPUT[36101]
+
+
+async def test_a_run_of_failed_polls_recycles_the_link(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    mock_connection: ConnectionFactory,
+) -> None:
+    """A logger taken over by another client leaves the socket open but mute."""
+    connection = mock_connection.connections[-1]
+    coordinator = config_entry.runtime_data
+    mock_connection.unit.fail_requests(ModbusConnectionError("device is offline"))
+
+    for _ in range(FAILURES_BEFORE_RECONNECT - 1):
+        await coordinator.async_refresh()
+    assert connection.connected  # not yet: most failures heal on their own
+
+    await coordinator.async_refresh()
+    assert not connection.connected  # torn down, ready to be rebuilt
+
+    # close() would be permanent; disconnect() leaves the connection usable, so
+    # the next successful poll brings everything back without an entry reload.
+    mock_connection.unit.fail_requests(None)
+    await coordinator.async_refresh()
+    assert coordinator.last_update_success
+    assert hass.states.get("sensor.asw8000_3_active_power").state == "5389"
+
+
+async def test_an_isolated_failure_does_not_recycle_the_link(
+    config_entry: MockConfigEntry, mock_connection: ConnectionFactory
+) -> None:
+    """One bad poll among good ones is not a stuck link."""
+    connection = mock_connection.connections[-1]
+    coordinator = config_entry.runtime_data
+
+    for _ in range(FAILURES_BEFORE_RECONNECT * 2):
+        mock_connection.unit.fail_requests(ModbusConnectionError("blip"))
+        await coordinator.async_refresh()
+        mock_connection.unit.fail_requests(None)
+        await coordinator.async_refresh()
+
+    assert connection.connected
+    assert coordinator.last_update_success

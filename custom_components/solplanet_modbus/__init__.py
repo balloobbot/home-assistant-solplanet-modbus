@@ -33,7 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
     entry.async_on_unload(connection.close)
 
     unit = connection.for_unit(entry.data.get(CONF_UNIT_ID, DEFAULT_INVERTER_UNIT_ID))
-    coordinator = SolplanetCoordinator(hass, entry, unit)
+    coordinator = SolplanetCoordinator(hass, entry, connection, unit)
 
     # One discovery read: the identity blocks name the devices and say how many
     # PV inputs, strings and phases each inverter actually has.

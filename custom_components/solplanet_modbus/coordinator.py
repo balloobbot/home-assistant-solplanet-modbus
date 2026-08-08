@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from typing import Any
 
@@ -11,7 +12,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
-from modbus_connection import ModbusError, ModbusUnit
+from modbus_connection import ModbusConnection, ModbusError, ModbusUnit
 from modbus_connection.model import ComponentGroup
 
 from .const import (
@@ -20,6 +21,7 @@ from .const import (
     CONF_MODE,
     CONF_WEATHER,
     DOMAIN,
+    FAILURES_BEFORE_RECONNECT,
     MODE_AILOGGER,
     SCAN_INTERVAL,
 )
@@ -56,7 +58,11 @@ class SolplanetCoordinator(DataUpdateCoordinator[None]):
     """
 
     def __init__(
-        self, hass: HomeAssistant, entry: SolplanetConfigEntry, unit: ModbusUnit
+        self,
+        hass: HomeAssistant,
+        entry: SolplanetConfigEntry,
+        connection: ModbusConnection,
+        unit: ModbusUnit,
     ) -> None:
         """Build the device objects the entry describes."""
         super().__init__(
@@ -66,6 +72,8 @@ class SolplanetCoordinator(DataUpdateCoordinator[None]):
             config_entry=entry,
             update_interval=SCAN_INTERVAL,
         )
+        self._connection = connection
+        self._failures = 0
         self.unit = unit
         self.ailogger: AiLogger | None = None
         self.site: SystemPower | None = None
@@ -136,4 +144,27 @@ class SolplanetCoordinator(DataUpdateCoordinator[None]):
             else:
                 await self.inverters[0].async_update()
         except ModbusError as err:
+            await self._recycle_a_stuck_link()
             raise UpdateFailed(f"Error reading the inverters: {err}") from err
+        self._failures = 0
+
+    async def _recycle_a_stuck_link(self) -> None:
+        """Tear the link down once a run of polls has failed.
+
+        A link the transport drops re-establishes itself on the next request, so
+        most failures need nothing. This is for the case that does not heal on
+        its own: the logger accepts one client at a time, so another one taking
+        it over can leave this socket open but unanswered. Dropping it deliberately
+        makes the next poll build a fresh one; unlike ``close()`` the connection
+        stays usable, so nothing has to reload the config entry.
+        """
+        self._failures += 1
+        if self._failures < FAILURES_BEFORE_RECONNECT:
+            return
+        self._failures = 0
+        _LOGGER.debug(
+            "Recycling the connection after %s failed polls", FAILURES_BEFORE_RECONNECT
+        )
+        # The link is dropped whether or not tearing it down cleanly worked.
+        with contextlib.suppress(ModbusError):
+            await self._connection.disconnect()

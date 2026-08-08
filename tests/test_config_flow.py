@@ -122,7 +122,7 @@ async def test_ailogger_flow_reports_an_empty_scan(
 
 
 def _unreachable(unit_id: int):
-    """A connection whose reads fail, as an unplugged device's would.
+    """A connection whose requests all fail, as an unplugged device's would.
 
     ``build_connection`` itself never fails: it performs no I/O, so an
     unreachable device only shows up when the first block is read.
@@ -130,8 +130,8 @@ def _unreachable(unit_id: int):
 
     def build(data: object) -> MockModbusConnection:
         connection = MockModbusConnection()
-        connection.for_unit(unit_id).fail_read(
-            1000, ModbusConnectionError("no route to host"), register_type="input"
+        connection.for_unit(unit_id).fail_requests(
+            ModbusConnectionError("no route to host")
         )
         return connection
 

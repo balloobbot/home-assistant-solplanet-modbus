@@ -49,3 +49,9 @@ DEFAULT_INVERTER_UNIT_ID: Final = 3
 # The logger polls each inverter about every 5 seconds, so a faster cycle just
 # re-reads the same values.
 SCAN_INTERVAL: Final = timedelta(seconds=30)
+
+# Consecutive failed polls before the link is torn down and rebuilt. UM0058
+# says the logger serves one client at a time; if another takes it over, ours
+# can stay open while stopping being answered, and no amount of retrying on
+# the same socket recovers that.
+FAILURES_BEFORE_RECONNECT: Final = 3
