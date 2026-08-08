@@ -8,6 +8,6 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/balloobbot/home-assistant-solplanet-modbus/issues",
   "loggers": ["modbus_connection"],
-  "requirements": ["modbus-connection[tmodbus]>=4.2"],
+  "requirements": ["modbus-connection[tmodbus]>=4.3"],
   "version": "0.1.0"
 }
