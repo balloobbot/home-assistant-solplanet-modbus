@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from modbus_connection import ModbusConnectionError
 from modbus_connection.mock import MockModbusConnection
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.solplanet_modbus.const import (
     CONF_BAUDRATE,

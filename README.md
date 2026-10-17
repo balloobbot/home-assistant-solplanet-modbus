@@ -85,4 +85,4 @@ uv sync
 uv run pytest
 ```
 
-The tests run the real Home Assistant test harness ([pytest-homeassistant-custom-component](https://github.com/MatthewFlamm/pytest-homeassistant-custom-component)) against modbus-connection's in-memory mock backend — no hardware, no sockets.
+The tests use Home Assistant's `pytest-home-assistant` package against modbus-connection's in-memory mock backend — no hardware, no sockets. Python 3.14.2 or newer is required. Home Assistant and its pytest helpers are pinned to the same Core revision in `pyproject.toml` while the standalone test package is awaiting publication.

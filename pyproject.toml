@@ -2,7 +2,7 @@
 name = "solplanet-modbus-hass-tests"
 version = "0"
 description = "Dev/test environment for the Solplanet Ai-Logger (Modbus) custom integration."
-requires-python = ">=3.13"
+requires-python = ">=3.14.2"
 dependencies = []
 
 [dependency-groups]
@@ -14,18 +14,21 @@ dev = [
     # matches the manifest requirement, so connection.py imports at top level.
     "modbus-connection[tmodbus]>=4.3",
     # Real Home Assistant plus its custom-component test harness.
-    "pytest-homeassistant-custom-component",
+    "homeassistant==2026.11.0.dev0",
+    "pytest-home-assistant==2026.11.0.dev0",
 ]
 
 [tool.uv]
 package = false
 
 [tool.pytest.ini_options]
+addopts = "-p no:respx"
+asyncio_default_fixture_loop_scope = "function"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py313"
+target-version = "py314"
 # Vendored verbatim from balloobbot/solplanet-modbus; not linted here.
 extend-exclude = ["custom_components/solplanet_modbus/vendor"]
 
@@ -34,3 +37,7 @@ select = ["E", "F", "W", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
+
+[tool.uv.sources]
+homeassistant = { git = "https://github.com/balloobbot/core", rev = "30e421c887cead29b781c348e161c46d9bccb380" }
+pytest-home-assistant = { git = "https://github.com/balloobbot/core", rev = "30e421c887cead29b781c348e161c46d9bccb380", subdirectory = "packages/pytest-home-assistant" }
